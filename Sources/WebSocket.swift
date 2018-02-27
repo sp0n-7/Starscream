@@ -325,10 +325,10 @@ public protocol WebSocketAdvancedDelegate: class {
     func websocketHttpUpgrade(socket: WebSocket, response: String)
 }
 
+// swiftlint:disable next type_body_length
+open class WebSocket: NSObject, StreamDelegate, WebSocketClient, WSStreamDelegate {
 
-open class WebSocket : NSObject, StreamDelegate, WebSocketClient, WSStreamDelegate {
-
-    public enum OpCode : UInt8 {
+    public enum OpCode: UInt8 {
         case continueFrame = 0x0
         case textFrame = 0x1
         case binaryFrame = 0x2
@@ -398,6 +398,7 @@ open class WebSocket : NSObject, StreamDelegate, WebSocketClient, WSStreamDelega
     public var onData: ((Data) -> Void)?
     public var onPong: ((Data?) -> Void)?
 
+    public var headers = [String: String]()
     public var disableSSLCertValidation = false
     public var overrideTrustHostname = false
     public var desiredTrustHostname: String? = nil
@@ -584,6 +585,10 @@ open class WebSocket : NSObject, StreamDelegate, WebSocketClient, WSStreamDelega
         headerSecKey = generateWebSocketKey()
         request.setValue(headerWSVersionValue, forHTTPHeaderField: headerWSVersionName)
         request.setValue(headerSecKey, forHTTPHeaderField: headerWSKeyName)
+        
+        for (key, value) in headers {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
         
         if enableCompression {
             let val = "permessage-deflate; client_max_window_bits; server_max_window_bits=15"
@@ -957,6 +962,7 @@ open class WebSocket : NSObject, StreamDelegate, WebSocketClient, WSStreamDelega
     /**
      Process one message at the start of `buffer`. Return another buffer (sharing storage) that contains the leftover contents of `buffer` that I didn't process.
      */
+    // swiftlint:disable next cyclomatic_complexity
     private func processOneRawMessage(inBuffer buffer: UnsafeBufferPointer<UInt8>) -> UnsafeBufferPointer<UInt8> {
         let response = readStack.last
         guard let baseAddress = buffer.baseAddress else {return emptyBuffer}
@@ -1333,7 +1339,7 @@ private extension UnsafeBufferPointer {
 }
 
 private let emptyBuffer = UnsafeBufferPointer<UInt8>(start: nil, count: 0)
-
+// swiftlint:disable next file_length
 #if swift(>=4)
 #else
 fileprivate extension String {
